@@ -433,10 +433,8 @@ ggsave("../visuals/fig5.png", width = 10, height = 5, scale = 1)
 ```{r}
 # read in data coded for complete narratives (attempt, goal or internal state, and outcome)
 nar_data1 <- read_csv("../data/nar_data1.csv")
-
-
-nar_data1%>%distinct(child, .keep_all = T)%>%summarise(mean = mean(age/12), sd = sd(age/12))
 ```
+
 ```{r}
 mnar_data1 <- nar_data1%>%
   mutate(age = scale(age))%>%

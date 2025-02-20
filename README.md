@@ -8,7 +8,7 @@
 
 ## Paper
 
-Gagarina, N., Bohn, M., Bohnacker, U., ... Walters, J. (submitted). [A story of stories: a large-scale cross-linguistic study of young children’s narratives]().
+Gagarina, N., Bohn, M., Bohnacker, U., ... Walters, J. (submitted). [A story of stories: a large-scale cross-linguistic study of young children’s narratives](https://www.researchsquare.com/article/rs-5672219/v1).
 
 ## Structure
 

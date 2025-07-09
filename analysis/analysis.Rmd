@@ -17,16 +17,16 @@ data <- read_csv("../data/data.csv")
 ## Descriptives
 ```{r}
 n_distinct(data$child)
-# [1] 2776
+# [1] 2698
 
 n_distinct(data$testlanguage)
 #[1] 43
 
 range(data$age)/12
-#3.416667 13.833333
+#3 18
 
 print(data%>%group_by(testlanguage)%>%summarise(n = n_distinct(child)),n=43)
-#   testlanguage     n
+#    testlanguage     n
 #    <chr>        <int>
 #  1 afr            110
 #  2 aka             39
@@ -84,39 +84,63 @@ mdata <- data%>%
 ## Data collection locations
 
 ```{r}
-world <- map_data("world")
+# Load required libraries
+library(tidyverse)
+library(ape)
+library(ggtree)
 
-data_map <- read_csv("../data/data_map.csv")%>%
-  mutate(region = recode(region, 
-                         Tadjikistan = "Tajikistan"))%>%
-  group_by(region)%>%
-  summarise(Participants = n_distinct(child))
+# Corrected and valid Newick tree grouped by language families
+newick <- "(
+  (eng,nld,ger,afr,dan,swe),                # Germanic
+  (ita,esp,cat,cor),                        # Romance
+  (rus,ukr,hrv,slk,pol),                    # Slavic
+  (gle,ghc),                                # Celtic
+  (hin,urd),                                # Indo-Aryan
+  (kan,gon,hlb),                            # Dravidian
+  (per,tgk,sgh),                            # Iranian
+  (fin,est,sah),                            # Uralic
+  (tur,kaz,uzb,uig),                        # Turkic
+  (cmn,yue,iii),                            # Sino-Tibetan
+  (kor),                                    # Koreanic
+  (tgl,msa),                                # Austronesian
+  (heb,ary),                                # Afro-Asiatic
+  (aka,lug,xho),                            # Niger-Congo
+  (bi,bis),                                 # Creoles
+  (geo),                                    # Kartvelian
+  (ell,cg),                                 # Hellenic
+  (ber)                                     # Berber
+);"
 
-selWorld <- left_join(world, data_map, by = "region")%>%
-  filter(region != "Antarctica")%>%
-  mutate(fill = ifelse(is.na(Participants), "out", "in"))%>% 
-  filter(! long > 180)
+# Read the Newick tree
+tree <- read.tree(text = newick)
 
-plain <- theme(
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(),
-  panel.background = element_rect(fill = "white"),
-  plot.title = element_text(hjust = 0.5)
+# Map language codes to full names
+lang_labels <- c(
+  per = "Persian", hrv = "Croatian", rus = "Russian", est = "Estonian",
+  fin = "Finnish", swe = "Swedish", geo = "Georgian", tur = "Turkish",
+  aka = "Akan", urd = "Urdu", hin = "Hindi", kan = "Kannada", gon = "Gondi",
+  hlb = "Halbi", gle = "Irish", heb = "Hebrew", ita = "Italian", uzb = "Uzbek",
+  bi = "Bislama", nld = "Dutch", tgl = "Tagalog", pol = "Polish", eng = "English",
+  slk = "Slovak", sgh = "Shughni", lug = "Luganda", sah = "Sakha",
+  cor = "Coriglianese", dan = "Danish", bis = "Bislama", iii = "Sichuan Yi",
+  cat = "Catalan", ger = "German", kaz = "Kazakh", uig = "Uighur",
+  lt = "Lithuanian", tgk = "Tajik", msa = "Malay", esp = "Spanish",
+  kor = "Korean", cg = "Cypriot Greek", yue = "Yue Chinese", ell = "Greek",
+  ber = "Berber languages", ary = "Moroccan Arabic", xho = "Xhosa",
+  afr = "Afrikaans", cmn = "Mandarin Chinese", ghc = "Hiberno-Scottish Gaelic",
+  ukr = "Ukrainian"
 )
 
-ggplot(data = selWorld, mapping = aes(x = long, y = lat, group = group)) + 
-  coord_map("moll")+
-  geom_polygon(aes(fill = Participants), linewidth = 0.05) +
-  scale_fill_manual(breaks = c("out", "in"), values = c("grey", "#DBD56E"), guide = "none")+
-  #scale_fill_viridis_c()+
-  plain+
-  theme(legend.position = c(0.1, 0.25), legend.background = element_blank())
+# Apply language name mapping to tip labels
+tree$tip.label <- lang_labels[tree$tip.label]
 
-unique(selWorld$region)
+# Plot tree (rectangular layout for better label readability)
+ggtree(tree, layout = "rectangular") +
+  geom_tiplab(size = 3, align = TRUE, linetype = "dotted") +
+  ggtitle("Phylogenetic Tree of Selected Languages") +
+  theme_tree2() +
+  theme(plot.title = element_text(hjust = 0.5, size = 14))
+
 
 ```
 ```{r}

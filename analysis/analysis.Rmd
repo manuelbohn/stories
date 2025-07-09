@@ -17,50 +17,60 @@ data <- read_csv("../data/data.csv")
 ## Descriptives
 ```{r}
 n_distinct(data$child)
-# [1] 1405
+# [1] 2776
 
 n_distinct(data$testlanguage)
-#[1] 33
+#[1] 43
 
 range(data$age)/12
 #3.416667 13.833333
 
-data%>%group_by(testlanguage)%>%summarise(n = n_distinct(child), n = 33)
+print(data%>%group_by(testlanguage)%>%summarise(n = n_distinct(child)),n=43)
 #   testlanguage     n
 #    <chr>        <int>
-#  1 aka             39
-#  2 eng            296
-#  3 est             27
-#  4 fin             55
-#  5 geo             20
-#  6 ger             90
-#  7 ghc             15
-#  8 gle              6
-#  9 gon             75
-# 10 heb             44
-# 11 hin            121
-# 12 hlb             32
-# 13 hrv             91
-# 14 ita             87
-# 15 kan             18
-# 16 kaz             14
-# 17 lit             28
-# 18 lug             24
-# 19 nld            127
-# 20 per             81
-# 21 pol             83
-# 22 rus            237
-# 23 sah             30
-# 24 sgh             20
-# 25 slk             62
-# 26 swe            150
-# 27 tgk             16
-# 28 tgl             18
-# 29 tur             45
-# 30 uig              5
-# 31 urd             24
-# 32 uzb             19
-# 33 yue             24
+#  1 afr            110
+#  2 aka             39
+#  3 cat             70
+#  4 cmn             19
+#  5 cor             85
+#  6 ell             48
+#  7 eng            391
+#  8 esp             70
+#  9 est             27
+# 10 fin             55
+# 11 geo             20
+# 12 ger            205
+# 13 ghc             15
+# 14 gle             35
+# 15 gon             75
+# 16 heb             44
+# 17 hin            121
+# 18 hlb             32
+# 19 hrv             91
+# 20 ita            172
+# 21 kan             18
+# 22 kaz             14
+# 23 kor            522
+# 24 lit             28
+# 25 lug             24
+# 26 msa             61
+# 27 nld            127
+# 28 per             81
+# 29 pol             83
+# 30 rus            288
+# 31 sah             30
+# 32 sgh             20
+# 33 slk            118
+# 34 swe            150
+# 35 tgk             16
+# 36 tgl             18
+# 37 tur             45
+# 38 uig              5
+# 39 ukr             19
+# 40 urd             24
+# 41 uzb             19
+# 42 xho            111
+# 43 yue             24
 ```
 
 
@@ -69,6 +79,50 @@ data%>%group_by(testlanguage)%>%summarise(n = n_distinct(child), n = 33)
 mdata <- data%>%
   mutate(age = scale(age))
 ```
+
+
+## Data collection locations
+
+```{r}
+world <- map_data("world")
+
+data_map <- read_csv("../data/data_map.csv")%>%
+  mutate(region = recode(region, 
+                         Tadjikistan = "Tajikistan"))%>%
+  group_by(region)%>%
+  summarise(Participants = n_distinct(child))
+
+selWorld <- left_join(world, data_map, by = "region")%>%
+  filter(region != "Antarctica")%>%
+  mutate(fill = ifelse(is.na(Participants), "out", "in"))%>% 
+  filter(! long > 180)
+
+plain <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(),
+  panel.background = element_rect(fill = "white"),
+  plot.title = element_text(hjust = 0.5)
+)
+
+ggplot(data = selWorld, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_map("moll")+
+  geom_polygon(aes(fill = Participants), linewidth = 0.05) +
+  scale_fill_manual(breaks = c("out", "in"), values = c("grey", "#DBD56E"), guide = "none")+
+  #scale_fill_viridis_c()+
+  plain+
+  theme(legend.position = c(0.1, 0.25), legend.background = element_blank())
+
+unique(selWorld$region)
+
+```
+```{r}
+ggsave("../visuals/map.png", width = 7, height = 4, scale = 1)
+```
+
 
 # 1. What are the differences in children’s overall narrative skills across languages?
 

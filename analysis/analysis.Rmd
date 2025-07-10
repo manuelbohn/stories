@@ -17,62 +17,68 @@ data <- read_csv("../data/data.csv")
 ## Descriptives
 ```{r}
 n_distinct(data$child)
-# [1] 2698
+# [1] 2740
 
 n_distinct(data$testlanguage)
-#[1] 43
+#[1] 44
 
 range(data$age)/12
-#3 18
+#3 14
 
-print(data%>%group_by(testlanguage)%>%summarise(n = n_distinct(child)),n=43)
+sd(data$age)/12
+#2.335605
+
+mean(data$age)/12
+#7.342638
+
+print(data%>%group_by(testlanguage)%>%summarise(n = n_distinct(child)),n=44)
 #    testlanguage     n
 #    <chr>        <int>
 #  1 afr            110
 #  2 aka             39
 #  3 cat             70
 #  4 cmn             19
-#  5 cor             85
-#  6 ell             48
-#  7 eng            391
-#  8 esp             70
-#  9 est             27
-# 10 fin             55
-# 11 geo             20
-# 12 ger            205
-# 13 ghc             15
-# 14 gle             35
-# 15 gon             75
-# 16 heb             44
-# 17 hin            121
-# 18 hlb             32
-# 19 hrv             91
-# 20 ita            172
-# 21 kan             18
-# 22 kaz             14
-# 23 kor            522
-# 24 lit             28
-# 25 lug             24
-# 26 msa             61
-# 27 nld            127
-# 28 per             81
-# 29 pol             83
-# 30 rus            288
-# 31 sah             30
-# 32 sgh             20
-# 33 slk            118
-# 34 swe            150
-# 35 tgk             16
-# 36 tgl             18
-# 37 tur             45
-# 38 uig              5
-# 39 ukr             19
-# 40 urd             24
-# 41 uzb             19
-# 42 xho            111
-# 43 yue             24
+#  5 cor             55
+#  6 dan             72
+#  7 ell             48
+#  8 eng            391
+#  9 esp             70
+# 10 est             27
+# 11 fin             55
+# 12 geo             20
+# 13 ger            205
+# 14 ghc             15
+# 15 gle             35
+# 16 gon             75
+# 17 heb             44
+# 18 hin            121
+# 19 hlb             32
+# 20 hrv             91
+# 21 ita            142
+# 22 kan             18
+# 23 kaz             14
+# 24 kor            522
+# 25 lit             28
+# 26 lug             24
+# 27 msa             61
+# 28 nld            127
+# 29 per             81
+# 30 pol             83
+# 31 rus            288
+# 32 sah             30
+# 33 sgh             20
+# 34 slk            118
+# 35 swe            150
+# 36 tgk             16
+# 37 tgl             18
+# 38 tur             45
+# 39 uig              5
+# 40 ukr             19
+# 41 urd             24
+# 42 uzb             19
+# 43 xho            111
+# 44 yue             24
 ```
-
 
 ```{r}
 # scale age for modelling
@@ -80,71 +86,79 @@ mdata <- data%>%
   mutate(age = scale(age))
 ```
 
-
-## Data collection locations
+# 0. Overall development of narrative skills
 
 ```{r}
-# Load required libraries
-library(tidyverse)
-library(ape)
-library(ggtree)
-
-# Corrected and valid Newick tree grouped by language families
-newick <- "(
-  (eng,nld,ger,afr,dan,swe),                # Germanic
-  (ita,esp,cat,cor),                        # Romance
-  (rus,ukr,hrv,slk,pol),                    # Slavic
-  (gle,ghc),                                # Celtic
-  (hin,urd),                                # Indo-Aryan
-  (kan,gon,hlb),                            # Dravidian
-  (per,tgk,sgh),                            # Iranian
-  (fin,est,sah),                            # Uralic
-  (tur,kaz,uzb,uig),                        # Turkic
-  (cmn,yue,iii),                            # Sino-Tibetan
-  (kor),                                    # Koreanic
-  (tgl,msa),                                # Austronesian
-  (heb,ary),                                # Afro-Asiatic
-  (aka,lug,xho),                            # Niger-Congo
-  (bi,bis),                                 # Creoles
-  (geo),                                    # Kartvelian
-  (ell,cg),                                 # Hellenic
-  (ber)                                     # Berber
-);"
-
-# Read the Newick tree
-tree <- read.tree(text = newick)
-
-# Map language codes to full names
-lang_labels <- c(
-  per = "Persian", hrv = "Croatian", rus = "Russian", est = "Estonian",
-  fin = "Finnish", swe = "Swedish", geo = "Georgian", tur = "Turkish",
-  aka = "Akan", urd = "Urdu", hin = "Hindi", kan = "Kannada", gon = "Gondi",
-  hlb = "Halbi", gle = "Irish", heb = "Hebrew", ita = "Italian", uzb = "Uzbek",
-  bi = "Bislama", nld = "Dutch", tgl = "Tagalog", pol = "Polish", eng = "English",
-  slk = "Slovak", sgh = "Shughni", lug = "Luganda", sah = "Sakha",
-  cor = "Coriglianese", dan = "Danish", bis = "Bislama", iii = "Sichuan Yi",
-  cat = "Catalan", ger = "German", kaz = "Kazakh", uig = "Uighur",
-  lt = "Lithuanian", tgk = "Tajik", msa = "Malay", esp = "Spanish",
-  kor = "Korean", cg = "Cypriot Greek", yue = "Yue Chinese", ell = "Greek",
-  ber = "Berber languages", ary = "Moroccan Arabic", xho = "Xhosa",
-  afr = "Afrikaans", cmn = "Mandarin Chinese", ghc = "Hiberno-Scottish Gaelic",
-  ukr = "Ukrainian"
-)
-
-# Apply language name mapping to tip labels
-tree$tip.label <- lang_labels[tree$tip.label]
-
-# Plot tree (rectangular layout for better label readability)
-ggtree(tree, layout = "rectangular") +
-  geom_tiplab(size = 3, align = TRUE, linetype = "dotted") +
-  ggtitle("Phylogenetic Tree of Selected Languages") +
-  theme_tree2() +
-  theme(plot.title = element_text(hjust = 0.5, size = 14))
-
-
+# aggregate data per individual for binomial model
+mdata0 <- mdata%>%
+  group_by(child, age, testlanguage)%>%
+  summarise(sum = sum(response),
+            n = length(response))
 ```
+
 ```{r}
-ggsave("../visuals/map.png", width = 7, height = 4, scale = 1)
+# bm0 <- brm(sum|trials(n) ~ age + (1|child) + (age | testlanguage), 
+#     data = mdata0,
+#     chains = 4, 
+#     cores = 4,
+#     iter = 4000,
+#     family = binomial(),
+#     threads = threading(8), #to speed things up, comment out if not on a cluster
+#     backend = "cmdstanr",
+#     control = list(adapt_delta = 0.95, max_treedepth = 20)
+#     )%>%add_criterion("loo")
+# 
+# saveRDS(bm0, "../saves/bm0.rds")
+```
+
+## Fixed effects
+
+```{r}
+fixef(bm0)
+```
+            Estimate  Est.Error       Q2.5     Q97.5
+Intercept 0.02570466 0.06510717 -0.1023787 0.1556279
+age       0.59404431 0.08762003  0.4278555 0.7686384
+
+## Visualization
+
+```{r}
+# ndata0 <- mdata0%>%
+#   select(testlanguage, age)%>%
+#   group_by(testlanguage)%>%
+#   distinct(age)%>%
+#   mutate(n = 1)
+# 
+# post0 <- fitted(bm0, newdata = ndata0, re_formula =~(age | testlanguage))%>%
+#   as_tibble() %>%
+#   bind_cols(ndata0)%>%
+#   mutate(age = age * sd(data$age) + mean(data$age))
+# 
+# ndata0_2 <- mdata%>%
+#   distinct(age)%>%
+#   mutate(n = 1)
+# 
+# post0_2 <- fitted(bm0, newdata = ndata0_2, re_formula = NA)%>%
+#   as_tibble() %>%
+#   bind_cols(ndata0_2)%>%
+#   mutate(age = age * sd(data$age) + mean(data$age))
+# 
+# 
+# saveRDS(post0, "../saves/post0.rds")
+# saveRDS(post0_2, "../saves/post0_2.rds")
+
+
+post0 <- readRDS("../saves/post0.rds")
+post0_2 <- readRDS("../saves/post0_2.rds")
+
+
+ggplot()+
+  geom_line(data = post0, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5, group = testlanguage), stat = "identity", alpha = .25)+
+  geom_smooth(data = post0_2, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5), col = "black", stat = "identity", alpha = .25)+
+  theme_bw()+
+  ylim(0,1)+
+  labs(x = "Age in years", y="Probability of producing a narrative component")+
+  theme(legend.position = c(0.8, 0.15), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
 ```
 
 
@@ -160,87 +174,92 @@ mdata1 <- mdata%>%
 
 
 ```{r}
-bm1 <- brm(sum|trials(n) ~ age * ling + mode + (1|child) + (age | testlanguage), 
-    data = mdata1,
-    chains = 4, 
-    cores = 4,
-    iter = 4000,
-    family = binomial(),
-    threads = threading(8), #to speed things up, comment out if not on a cluster
-    backend = "cmdstanr",
-    control = list(adapt_delta = 0.95, max_treedepth = 20)
-    )
-
-saveRDS(bm1, "../saves/bm1.rds")
+# bm1 <- brm(sum|trials(n) ~ age * ling + mode + (1|child) + (age | testlanguage), 
+#     data = mdata1,
+#     chains = 4, 
+#     cores = 4,
+#     iter = 4000,
+#     family = binomial(),
+#     threads = threading(8), #to speed things up, comment out if not on a cluster
+#     backend = "cmdstanr",
+#     control = list(adapt_delta = 0.95, max_treedepth = 20)
+#     )%>%add_criterion("loo")
+# 
+# saveRDS(bm1, "../saves/bm1.rds")
 ```
 
 
 ```{r}
-bm1_1 <- brm(sum|trials(n) ~ age + ling + mode + (1|child) + (age | testlanguage), 
-    data = mdata1,
-    chains = 4, 
-    cores = 4,
-    iter = 4000,
-    family = binomial(),
-    threads = threading(8), #to speed things up, comment out if not on a cluster
-    backend = "cmdstanr",
-    control = list(adapt_delta = 0.95, max_treedepth = 20)
-    )
-
-saveRDS(bm1, "../saves/bm1_1.rds")
+# bm1_1 <- brm(sum|trials(n) ~ age + ling + mode + (1|child) + (age | testlanguage), 
+#     data = mdata1,
+#     chains = 4, 
+#     cores = 4,
+#     iter = 4000,
+#     family = binomial(),
+#     threads = threading(8), #to speed things up, comment out if not on a cluster
+#     backend = "cmdstanr",
+#     control = list(adapt_delta = 0.95, max_treedepth = 20)
+#     )%>%add_criterion("loo")
+# 
+# saveRDS(bm1, "../saves/bm1_1.rds")
 ```
+
+
+```{r}
+# print(loo_compare(bm1, bm1_1)%>%as_tibble(rownames = "model"))
+```
+model elpd_diff  se_diff    elpd_loo   se_elpd_loo p_loo  se_p_loo looic
+  <chr> <compar.l> <compar.l> <compar.l> <compar.l>  <comp> <compar> <com>
+1 bm1    0.000000  0.00000    -11319.19  58.29841    1231.… 23.52328 2263…
+2 bm1_1 -7.755914  3.92498    -11326.94  58.23827    1238.… 23.51072 2265…
 
 ## Fixed effects
 
 ```{r}
 fixef(bm1)
 ```
-                      Estimate  Est.Error       Q2.5       Q97.5
-Intercept            0.3275707 0.07727257  0.1742991  0.48063550
-age                  0.6678299 0.10240489  0.4666000  0.87303440
-lingMonolingual     -0.1313758 0.09087711 -0.3085195  0.04677174
-modetelling         -0.3652205 0.02431607 -0.4122890 -0.31800940
-age:lingMonolingual -0.4463749 0.12358384 -0.6868958 -0.20327683
+                       Estimate  Est.Error       Q2.5       Q97.5
+Intercept            0.37084631 0.07303083  0.2274967  0.51417952
+age                  0.59967155 0.08867293  0.4244529  0.77787010
+lingMonolingual     -0.06333196 0.04089941 -0.1426443  0.01715709
+modetelling         -0.56449412 0.01777624 -0.5991887 -0.53009042
+age:lingMonolingual -0.20925446 0.05522629 -0.3176186 -0.09968928
 
-
-```{r}
-fixef(bm1_1)
-```
 
 ## Visualization
 
 ```{r}
-ndata1 <- mdata1%>%
-  select(testlanguage, age, ling)%>%
-  group_by(testlanguage, ling)%>%
-  distinct(age)%>%
-  expand_grid(mode = unique(mdata$mode))%>%
-  mutate(n = 1)
-
-post1 <- fitted(bm1_1, newdata = ndata1, re_formula =~(age | testlanguage))%>%
-  as_tibble() %>%
-  bind_cols(ndata1)%>%
-  mutate(age = age * sd(data$age) + mean(data$age))%>%
-  mutate(mode = str_to_title(mode))%>%
-  mutate(mode = factor(mode, levels = c("Telling","Retelling")))
-
-ndata1_2 <- mdata%>%
-  select(age, ling)%>%
-  group_by(ling)%>%
-  distinct(age)%>%
-  expand_grid(mode = unique(mdata$mode))%>%
-  mutate(n = 1)
-
-post1_2 <- fitted(bm1_1, newdata = ndata1_2, re_formula = NA)%>%
-  as_tibble() %>%
-  bind_cols(ndata1_2)%>%
-  mutate(age = age * sd(data$age) + mean(data$age))%>%
-  mutate(mode = str_to_title(mode))%>%
-  mutate(mode = factor(mode, levels = c("Telling","Retelling")))
-
-
-saveRDS(post1, "../saves/post1.rds")
-saveRDS(post1_2, "../saves/post1_2.rds")
+# ndata1 <- mdata1%>%
+#   select(testlanguage, age, ling)%>%
+#   group_by(testlanguage, ling)%>%
+#   distinct(age)%>%
+#   expand_grid(mode = unique(mdata$mode))%>%
+#   mutate(n = 1)
+# 
+# post1 <- fitted(bm1, newdata = ndata1, re_formula =~(age | testlanguage))%>%
+#   as_tibble() %>%
+#   bind_cols(ndata1)%>%
+#   mutate(age = age * sd(data$age) + mean(data$age))%>%
+#   mutate(mode = str_to_title(mode))%>%
+#   mutate(mode = factor(mode, levels = c("Telling","Retelling")))
+# 
+# ndata1_2 <- mdata%>%
+#   select(age, ling)%>%
+#   group_by(ling)%>%
+#   distinct(age)%>%
+#   expand_grid(mode = unique(mdata$mode))%>%
+#   mutate(n = 1)
+# 
+# post1_2 <- fitted(bm1, newdata = ndata1_2, re_formula = NA)%>%
+#   as_tibble() %>%
+#   bind_cols(ndata1_2)%>%
+#   mutate(age = age * sd(data$age) + mean(data$age))%>%
+#   mutate(mode = str_to_title(mode))%>%
+#   mutate(mode = factor(mode, levels = c("Telling","Retelling")))
+# 
+# 
+# saveRDS(post1, "../saves/post1.rds")
+# saveRDS(post1_2, "../saves/post1_2.rds")
 
 
 post1 <- readRDS("../saves/post1.rds")
@@ -263,6 +282,133 @@ ggplot()+
 ggsave("../visuals/fig2.png", width = 10, height = 5, scale = 1)
 ```
 
+# 1.1. Differences for languages with data from mono and bilinguals
+
+```{r}
+data_ling <- read_csv("../data/data_multi_ling.csv")
+```
+
+```{r}
+mdata1_ling <- data_ling%>%
+  mutate(age = scale(age))%>%
+  group_by(child, age, mode, testlanguage, ling)%>%
+  summarise(sum = sum(response),
+            n = length(response))
+```
+
+
+```{r}
+# bm1_2 <- brm(sum|trials(n) ~ age * ling + mode + (1|child) + (age | testlanguage), 
+#     data = mdata1_ling,
+#     chains = 4, 
+#     cores = 4,
+#     iter = 4000,
+#     family = binomial(),
+#     threads = threading(8), #to speed things up, comment out if not on a cluster
+#     backend = "cmdstanr",
+#     control = list(adapt_delta = 0.95, max_treedepth = 20)
+#     )%>%add_criterion("loo")
+# 
+# saveRDS(bm1_2, "../saves/bm1_2.rds")
+```
+
+## Fixed effects
+
+```{r}
+# fixef(bm1_2)
+```
+
+                      Estimate  Est.Error        Q2.5       Q97.5
+Intercept           -0.2594510 0.07600014 -0.41577172 -0.11193113
+age                  0.4427069 0.07606136  0.29453743  0.59732642
+lingMonolingual      0.1847095 0.04559862  0.09574817  0.27628672
+modetelling         -0.1622292 0.05036460 -0.26252720 -0.06285328
+age:lingMonolingual -0.2596995 0.04475827 -0.34868975 -0.17057035
+
+## Visualization
+
+```{r}
+# ndata12 <- mdata1_ling%>%
+#   select(testlanguage, age, ling)%>%
+#   group_by(testlanguage, ling)%>%
+#   distinct(age)%>%
+#   expand_grid(mode = unique(data_ling$mode))%>%
+#   mutate(n = 1)
+# 
+# post12 <- fitted(bm1_2, newdata = ndata12, re_formula =~(age | testlanguage))%>%
+#   as_tibble() %>%
+#   bind_cols(ndata12)%>%
+#   mutate(age = age * sd(data_ling$age) + mean(data_ling$age))%>%
+#   mutate(mode = str_to_title(mode))%>%
+#   mutate(mode = factor(mode, levels = c("Telling","Retelling")))
+# 
+# ndata12_2 <- mdata1_ling%>%
+#   select(age, ling)%>%
+#   group_by(ling)%>%
+#   distinct(age)%>%
+#   expand_grid(mode = unique(data_ling$mode))%>%
+#   mutate(n = 1)
+# 
+# post12_2 <- fitted(bm1_2, newdata = ndata12_2, re_formula = NA)%>%
+#   as_tibble() %>%
+#   bind_cols(ndata12_2)%>%
+#   mutate(age = age * sd(data_ling$age) + mean(data_ling$age))%>%
+#   mutate(mode = str_to_title(mode))%>%
+#   mutate(mode = factor(mode, levels = c("Telling","Retelling")))
+# 
+# 
+# saveRDS(post12, "../saves/post12.rds")
+# saveRDS(post12_2, "../saves/post12_2.rds")
+
+
+post12 <- readRDS("../saves/post12.rds")
+post12_2 <- readRDS("../saves/post12_2.rds")
+
+
+ggplot()+
+  geom_line(data = post12, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5, col = ling, group = interaction(ling,testlanguage)), stat = "identity", alpha = .25)+
+  geom_smooth(data = post12_2, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5, fill =ling, col = ling), stat = "identity", alpha = .25)+
+  theme_bw()+
+  scale_color_ptol(name = "Language status")+
+  scale_fill_ptol(name = "Language status")+
+  ylim(0,1)+
+  facet_wrap(~mode)+
+  labs(x = "Age in years", y="Probability of producing a narrative component")+
+  theme(legend.position = c(0.8, 0.15), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
+```
+
+```{r}
+ggsave("../visuals/fig2.png", width = 10, height = 5, scale = 1)
+```
+
+## Joint Figure 1 and 1.1
+
+```{r}
+
+postl <- bind_rows(
+  post1%>%mutate(type = "All data"),
+  post12%>%mutate(type = "Languages with data\n for mono- and bilinguals")
+) 
+
+
+posta <- bind_rows(
+  post1_2%>%mutate(type = "All data"),
+  post12_2%>%mutate(type = "Languages with data\n for mono- and bilinguals")
+) 
+
+ggplot()+
+  geom_line(data = postl, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5, col = ling, group = interaction(ling,testlanguage)), stat = "identity", alpha = .25)+
+  geom_smooth(data = posta, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5, fill =ling, col = ling), stat = "identity", alpha = .25)+
+  theme_bw()+
+  scale_color_ptol(name = "Language status")+
+  scale_fill_ptol(name = "Language status")+
+  ylim(0,1)+
+  facet_grid(type~mode)+
+  labs(x = "Age in years", y="Probability of producing a narrative component")+
+  theme(legend.position = c(0.85, 0.15), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
+
+```
+
 # 2. How does the development of bilinguals’ narrative skills in L1 compare to that in L2? 
 
 ```{r}
@@ -282,7 +428,7 @@ bm2 <- brm(sum|trials(n) ~ age + test_lang_status + mode + (1|child) + (age | te
     threads = threading(8), #to speed things up, comment out if not on a cluster
     backend = "cmdstanr",
     control = list(adapt_delta = 0.9, max_treedepth = 20)
-    )%>%add_criterion("loo") #to speed things up, comment out if not on a cluster)
+    )%>%add_criterion("loo") 
 
 
 saveRDS(bm2, "../saves/bm2.rds")
@@ -307,10 +453,10 @@ saveRDS(bm2_1, "../saves/bm2_1.rds")
 ```{r}
 print(loo_compare(bm2, bm2_1)%>%as_tibble(rownames = "model"))
 ```
-  model elpd_diff  se_diff    elpd_loo   se_elpd_loo p_loo   se_p_loo looic se_looic
-  <chr> <compar.l> <compar.l> <compar.l> <compar.l>  <compa> <compar> <com> <compar>
-1 bm2    0.0000000 0.000000   -5169.621  38.54474    513.91… 13.95926 1033… 77.08947
-2 bm2_1 -0.5349237 0.983548   -5170.155  38.51985    515.14… 13.93043 1034… 77.03971
+model elpd_diff  se_diff    elpd_loo   se_elpd_loo p_loo  se_p_loo looic
+  <chr> <compar.l> <compar.l> <compar.l> <compar.l>  <comp> <compar> <com>
+1 bm2_1  0.000000  0.000000   -6647.887  46.74597    753.0… 20.35827 1329…
+2 bm2   -1.292518  3.300637   -6649.180  46.64971    754.5… 20.28111 1329…
 
 
 ## Fixed effects
@@ -319,11 +465,11 @@ print(loo_compare(bm2, bm2_1)%>%as_tibble(rownames = "model"))
 fixef(bm2)
 ```
 
-                     Estimate  Est.Error        Q2.5      Q97.5
-Intercept           0.1886201 0.08289399  0.02434448  0.3499550
-age                 0.5779004 0.10682822  0.36792365  0.7907588
-test_lang_statusL2  0.2192306 0.05867445  0.10728780  0.3349802
-modetelling        -0.3584498 0.02497057 -0.40760430 -0.3101704
+                     Estimate  Est.Error         Q2.5      Q97.5
+Intercept           0.1688634 0.08472883 -0.001854431  0.3355942
+age                 0.5224211 0.09062137  0.341886900  0.6984061
+test_lang_statusL2  0.1792070 0.06218985  0.058240500  0.3041419
+modetelling        -0.4113573 0.02331139 -0.455899700 -0.3655539
 
 ## Visualization
 
@@ -373,7 +519,8 @@ ggplot()+
   scale_fill_manual(name = "Test language", values = c("#345c83", "#40531B"))+
   ylim(0,1)+
   facet_grid(~mode)+
-  labs(x = "Age", y="Probability of producing a narrative component")
+  labs(x = "Age", y="Probability of producing a narrative component")+
+  theme(legend.position = c(0.85, 0.15), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
 ```
 
 ```{r}
@@ -383,6 +530,20 @@ ggsave("../visuals/fig3.png", width = 10, height = 5, scale = 1)
 # 3. What is the general pattern in children’s use of factual and inferred components across the investigated languages?
 
 run script "run_bm3.R"
+
+```{r}
+age * ling + mode + age*item 
+```
+
+```{r}
+mdata_item <- data%>%
+  mutate(age = scale(age))%>%
+  group_by(child, age, ling, mode,testlanguage, item)%>%
+  summarise(sum = sum(response),
+            n = length(response))
+```
+
+
 
 ```{r}
 bm3 <- readRDS("../saves/bm3.rds")
@@ -431,17 +592,58 @@ post3 <- fitted(bm3, newdata = ndata3, re_formula =~(testlanguage | item))%>%
   as_tibble() %>%
   bind_cols(ndata3)%>%
   mutate(testlanguage = recode(testlanguage,
-                           "eng" = "English", "per" = "Persian", "hrv" = "Croatian", 
-                           "rus" = "Russian", "est" = "Estonian", "fin" = "Finnish", 
-                           "swe" = "Swedish", "geo" = "Georgian", "ger" = "German", 
-                           "tur" = "Turkish", "aka" = "Akan", "urd" = "Urdu", 
-                           "yue" = "Cantonese", "hin" = "Hindi", "kan" = "Kannada", 
-                           "gon" = "Gondi", "hlb" = "Halbi", "gle" = "Irish", 
-                           "heb" = "Hebrew", "ita" = "Italian", "kaz" = "Kazakh", 
-                           "uig" = "Uyghur", "uzb" = "Uzbek", "lit" = "Lithuanian", 
-                           "nld" = "Dutch", "tgl" = "Tagalog", "pol" = "Polish", 
-                           "ghc" = "Gaelic", "slk" = "Slovak", "sgh" = "Shughni", 
-                           "tgk" = "Tajik", "lug" = "Luganda", "sah" = "Yakut"))%>%
+                 "per" = "Persian",
+                     "hrv" = "Croatian",
+                     "rus" = "Russian",
+                     "est" = "Estonian",
+                     "fin" = "Finnish",
+                     "swe" = "Swedish",
+                     "geo" = "Georgian",
+                     "tur" = "Turkish",
+                     "aka" = "Akan",
+                     "urd" = "Urdu",
+                     "hin" = "Hindi",
+                     "kan" = "Kannada",
+                     "gon" = "Gondi",
+                     "hlb" = "Halbi",
+                     "gle" = "Irish",
+                     "heb" = "Hebrew",
+                     "ita" = "Italian",
+                     "uzb" = "Uzbek",
+                     "bi" = "Bislama",
+                     "nld" = "Dutch",
+                     "tgl" = "Tagalog",
+                     "pol" = "Polish",
+                     "eng" = "English",
+                     "slk" = "Slovak",
+                     "sgh" = "Shughni",
+                     "lug" = "Luganda",
+                     "sah" = "Sakha", 
+                     "cor" = "Coriglianese",
+                     "dan" = "Danish",
+                     "bis" = "Bislama",
+                     "iii" = "Sichuan Yi",
+                     "cat" = "Catalan", 
+                     "ita" = "Italian",
+                     "ger" = "German",
+                     "kaz" = "Kazakh",
+                     "uig" = "Uighur",
+                     "lt" = "Lithuanian",
+                     "tgk" = "Tajik",
+                     "msa" = "Malay",
+                     "esp" = "Spanish",
+                     "kor" = "Korean",
+                     "cg" = "Cypriot Greek",
+                     "yue" = "Yue Chinese",
+                     "ell" = "Modern Greek",
+                     "ber" = "Berber languages",
+                     "ary" = "Moroccan Arabic",
+                     "xho" = "Xhosa",
+                     "afr" = "Afrikaans",
+                     "cmn" = "Mandarin Chinese",
+                     "ghc" = "Hiberno-Scottish Gaelic",
+                     "ukr"  = "Ukrainian"
+                           ))%>%
   filter(item != "setting")%>%
   mutate(item = recode(item,
                         "ist" = "Internal State", 
@@ -514,50 +716,50 @@ nar_data1 <- read_csv("../data/nar_data1.csv")
 ```
 
 ```{r}
-mnar_data1 <- nar_data1%>%
-  mutate(age = scale(age))%>%
-  group_by(child, age, mode, testlanguage, ling)%>%
-  summarise(sum = sum(complete),
-            n = length(complete))
-
-bm4 <- brm(sum|trials(n) ~ age + ling + mode + (1|child) + (age | testlanguage), 
-    data = mnar_data1,
-    chains = 4, 
-    cores = 4,
-    iter = 4000,
-    family = binomial(),
-    threads = threading(8), #to speed things up, comment out if not on a cluster
-    backend = "cmdstanr",
-    control = list(adapt_delta = 0.95, max_treedepth = 20)
-    )%>%add_criterion("loo")  #to speed things up, comment out if not on a cluster)
-
-
-saveRDS(bm4, "../saves/bm4.rds")
-
-bm4_1 <- brm(sum|trials(n) ~ age * ling + mode + (1|child) + (age | testlanguage), 
-    data = mnar_data1,
-    chains = 4, 
-    cores = 4,
-    iter = 4000,
-    family = binomial(),
-    threads = threading(8), #to speed things up, comment out if not on a cluster
-    backend = "cmdstanr",
-    control = list(adapt_delta = 0.95, max_treedepth = 20)
-    )%>%add_criterion("loo") 
-
-saveRDS(bm4_1, "../saves/bm4_1.rds")
+# mnar_data1 <- nar_data1%>%
+#   mutate(age = scale(age))%>%
+#   group_by(child, age, mode, testlanguage, ling)%>%
+#   summarise(sum = sum(complete),
+#             n = length(complete))
+# 
+# bm4 <- brm(sum|trials(n) ~ age + ling + mode + (1|child) + (age | testlanguage), 
+#     data = mnar_data1,
+#     chains = 4, 
+#     cores = 4,
+#     iter = 4000,
+#     family = binomial(),
+#     threads = threading(8), #to speed things up, comment out if not on a cluster
+#     backend = "cmdstanr",
+#     control = list(adapt_delta = 0.95, max_treedepth = 20)
+#     )%>%add_criterion("loo")  #to speed things up, comment out if not on a cluster)
+# 
+# 
+# saveRDS(bm4, "../saves/bm4.rds")
+# 
+# bm4_1 <- brm(sum|trials(n) ~ age * ling + mode + (1|child) + (age | testlanguage), 
+#     data = mnar_data1,
+#     chains = 4, 
+#     cores = 4,
+#     iter = 4000,
+#     family = binomial(),
+#     threads = threading(8), #to speed things up, comment out if not on a cluster
+#     backend = "cmdstanr",
+#     control = list(adapt_delta = 0.95, max_treedepth = 20)
+#     )%>%add_criterion("loo") 
+# 
+# saveRDS(bm4_1, "../saves/bm4_1.rds")
 
 ```
 
 ## Model comparison
 
 ```{r}
-print(loo_compare(bm4, bm4_1))
+#print(loo_compare(bm4, bm4_1))
 ```
 
-    elpd_diff se_diff
+      elpd_diff se_diff
 bm4_1  0.0       0.0   
-bm4   -1.5       1.7 
+bm4   -2.6       2.8 
 
 ## Fixed effects
 
@@ -567,11 +769,11 @@ bm4   -1.5       1.7
 fixef(bm4)
 ```
 
-                Estimate  Est.Error       Q2.5      Q97.5
-Intercept       -0.4060002 0.15710090 -0.7241534 -0.1043293
-age              0.9367130 0.16534866  0.6220069  1.2682790
-lingMonolingual  0.3113266 0.10762288  0.1011727  0.5218090
-modetelling     -0.4780694 0.06066418 -0.5984158 -0.3549043
+                   Estimate  Est.Error       Q2.5      Q97.5
+Intercept       -0.38729022 0.13845736 -0.6656797 -0.1214909
+age              0.86070754 0.13449387  0.6122557  1.1350065
+lingMonolingual -0.01216158 0.07802259 -0.1638015  0.1423151
+modetelling     -0.70627605 0.04329577 -0.7927617 -0.6223730
 
 ### Interaction model 
 
@@ -579,12 +781,12 @@ modetelling     -0.4780694 0.06066418 -0.5984158 -0.3549043
 fixef(bm4_1)
 ```
 
-                       Estimate  Est.Error       Q2.5       Q97.5
-Intercept           -0.36217769 0.16095835 -0.6776961 -0.04212305
-age                  1.02556981 0.18166173  0.6822135  1.39046625
-lingMonolingual      0.02123661 0.20326860 -0.3751446  0.41633225
-modetelling         -0.47433415 0.06030159 -0.5920365 -0.35511398
-age:lingMonolingual -0.46447991 0.27314590 -1.0145452  0.06399581
+                      Estimate  Est.Error       Q2.5       Q97.5
+Intercept           -0.3435852 0.13694491 -0.6191936 -0.08773419
+age                  0.9620635 0.15446200  0.6755273  1.28608100
+lingMonolingual     -0.1224120 0.08678811 -0.2979445  0.04560172
+modetelling         -0.7121734 0.04281527 -0.7960030 -0.62755342
+age:lingMonolingual -0.3171017 0.12125556 -0.5532681 -0.07933007
 
 ### Visualization
 
@@ -592,27 +794,68 @@ age:lingMonolingual -0.46447991 0.27314590 -1.0145452  0.06399581
 ndata4 <- mnar_data1%>%
   ungroup()%>%
   distinct(testlanguage)%>%
-  expand_grid(ling = unique(nar_mdata$ling))%>%
+  expand_grid(ling = unique(mnar_data1$ling))%>%
   mutate(mode = "telling", 
          age = 0, 
          n = 1)
 
 
-post4 <- fitted(bm4, newdata = ndata4, re_formula =~(1 | testlanguage))%>%
+post4 <- fitted(bm4_1, newdata = ndata4, re_formula =~(1 | testlanguage))%>%
   as_tibble() %>%
   bind_cols(ndata4)%>%
   mutate(testlanguage = recode(testlanguage,
-                           "eng" = "English", "per" = "Persian", "hrv" = "Croatian", 
-                           "rus" = "Russian", "est" = "Estonian", "fin" = "Finnish", 
-                           "swe" = "Swedish", "geo" = "Georgian", "ger" = "German", 
-                           "tur" = "Turkish", "aka" = "Akan", "urd" = "Urdu", 
-                           "yue" = "Cantonese", "hin" = "Hindi", "kan" = "Kannada", 
-                           "gon" = "Gondi", "hlb" = "Halbi", "gle" = "Irish", 
-                           "heb" = "Hebrew", "ita" = "Italian", "kaz" = "Kazakh", 
-                           "uig" = "Uyghur", "uzb" = "Uzbek", "lit" = "Lithuanian", 
-                           "nld" = "Dutch", "tgl" = "Tagalog", "pol" = "Polish", 
-                           "ghc" = "Gaelic", "slk" = "Slovak", "sgh" = "Shughni", 
-                           "tgk" = "Tajik", "lug" = "Luganda", "sah" = "Yakut"))
+                 "per" = "Persian",
+                     "hrv" = "Croatian",
+                     "rus" = "Russian",
+                     "est" = "Estonian",
+                     "fin" = "Finnish",
+                     "swe" = "Swedish",
+                     "geo" = "Georgian",
+                     "tur" = "Turkish",
+                     "aka" = "Akan",
+                     "urd" = "Urdu",
+                     "hin" = "Hindi",
+                     "kan" = "Kannada",
+                     "gon" = "Gondi",
+                     "hlb" = "Halbi",
+                     "gle" = "Irish",
+                     "heb" = "Hebrew",
+                     "ita" = "Italian",
+                     "uzb" = "Uzbek",
+                     "bi" = "Bislama",
+                     "nld" = "Dutch",
+                     "tgl" = "Tagalog",
+                     "pol" = "Polish",
+                     "eng" = "English",
+                     "slk" = "Slovak",
+                     "sgh" = "Shughni",
+                     "lug" = "Luganda",
+                     "sah" = "Sakha", 
+                     "cor" = "Coriglianese",
+                     "dan" = "Danish",
+                     "bis" = "Bislama",
+                     "iii" = "Sichuan Yi",
+                     "cat" = "Catalan", 
+                     "ita" = "Italian",
+                     "ger" = "German",
+                     "kaz" = "Kazakh",
+                     "uig" = "Uighur",
+                     "lt" = "Lithuanian",
+                     "tgk" = "Tajik",
+                     "msa" = "Malay",
+                     "esp" = "Spanish",
+                     "kor" = "Korean",
+                     "cg" = "Cypriot Greek",
+                     "yue" = "Yue Chinese",
+                     "ell" = "Modern Greek",
+                     "ber" = "Berber languages",
+                     "ary" = "Moroccan Arabic",
+                     "xho" = "Xhosa",
+                     "afr" = "Afrikaans",
+                     "cmn" = "Mandarin Chinese",
+                     "ghc" = "Hiberno-Scottish Gaelic",
+                     "ukr"  = "Ukrainian"
+                           ))
 
 
 saveRDS(post4, "../saves/post4.rds")
@@ -621,10 +864,11 @@ post4 <- readRDS("../saves/post4.rds")
 
 
 ggplot()+
-  geom_pointrange(data = post4, aes(y = testlanguage, x = Estimate, xmin = Q2.5, xmax = Q97.5, col = ling), alpha = .75, position = position_dodge(width = 0.3))+
+  geom_pointrange(data = post4, aes(y = testlanguage, x = Estimate, xmin = Q2.5, xmax = Q97.5, col = ling), alpha = .75, position = position_dodge(width = 0.5))+
   theme_bw()+
   scale_color_ptol(name = "Language status")+
-  labs(y = "Language", x="Probability of producing complete narrative")
+  labs(y = "Language", x="Probability of producing complete narrative")+
+  theme(legend.position = c(0.85, 0.5), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
 ```
 
 ```{r}
@@ -641,18 +885,18 @@ nar_data1_bi <- nar_data1%>%
   summarise(sum = sum(complete),
             n = length(complete))
 
-bm4_bi <- brm(sum|trials(n) ~ age + test_lang_status + mode + (1|child) + (age | testlanguage), 
-    data = nar_data1_bi,
-    chains = 4, 
-    cores = 4,
-    iter = 4000,
-    family = binomial(),
-    threads = threading(8), #to speed things up, comment out if not on a cluster
-    backend = "cmdstanr",
-    control = list(adapt_delta = 0.95, max_treedepth = 20)
-    )%>%add_criterion("loo") 
-
-saveRDS(bm4_bi, "../saves/bm4_bi.rds")
+# bm4_bi <- brm(sum|trials(n) ~ age + test_lang_status + mode + (1|child) + (age | testlanguage), 
+#     data = nar_data1_bi,
+#     chains = 4, 
+#     cores = 4,
+#     iter = 4000,
+#     family = binomial(),
+#     threads = threading(8), #to speed things up, comment out if not on a cluster
+#     backend = "cmdstanr",
+#     control = list(adapt_delta = 0.95, max_treedepth = 20)
+#     )%>%add_criterion("loo") 
+# 
+# saveRDS(bm4_bi, "../saves/bm4_bi.rds")
 
 ```
 
@@ -662,11 +906,11 @@ saveRDS(bm4_bi, "../saves/bm4_bi.rds")
 fixef(bm4_bi)
 ```
 
-                      Estimate  Est.Error       Q2.5       Q97.5
-Intercept          -0.24477052 0.17858580 -0.6019724  0.09200422
-age                 0.97142966 0.19570141  0.5981369  1.36177025
-test_lang_statusL2  0.03601371 0.13283665 -0.2135332  0.30476942
-modetelling        -0.46599688 0.06362462 -0.5926337 -0.34166000
+                     Estimate  Est.Error       Q2.5       Q97.5
+Intercept          -0.3285612 0.13023396 -0.5910429 -0.07849624
+age                 0.8695058 0.14909338  0.5773645  1.17417125
+test_lang_statusL2 -0.1023116 0.12358917 -0.3463284  0.14515982
+modetelling        -0.5412475 0.05702476 -0.6532675 -0.43036353
 
 # 4.2. Complete narratives ignoring internal states (narrative = goal + attempt + outcome)
 
@@ -682,19 +926,19 @@ mnar_data2 <- nar_data2%>%
   summarise(sum = sum(complete),
             n = length(complete))
 
-bm4_2 <- brm(sum|trials(n) ~ age + ling + mode + (1|child) + (age | testlanguage), 
-    data = mnar_data2,
-    chains = 4, 
-    cores = 4,
-    iter = 4000,
-    family = binomial(),
-    threads = threading(8), #to speed things up, comment out if not on a cluster
-    backend = "cmdstanr",
-    control = list(adapt_delta = 0.95, max_treedepth = 20)
-    )%>%add_criterion("loo")  #to speed things up, comment out if not on a cluster)
-
-
-saveRDS(bm4_2, "../saves/bm4_2.rds")
+# bm4_2 <- brm(sum|trials(n) ~ age + ling + mode + (1|child) + (age | testlanguage), 
+#     data = mnar_data2,
+#     chains = 4, 
+#     cores = 4,
+#     iter = 4000,
+#     family = binomial(),
+#     threads = threading(8), #to speed things up, comment out if not on a cluster
+#     backend = "cmdstanr",
+#     control = list(adapt_delta = 0.95, max_treedepth = 20)
+#     )%>%add_criterion("loo")  #to speed things up, comment out if not on a cluster)
+# 
+# 
+# saveRDS(bm4_2, "../saves/bm4_2.rds")
 ```
 
 ## Fixed effects
@@ -703,11 +947,138 @@ saveRDS(bm4_2, "../saves/bm4_2.rds")
 fixef(bm4_2)
 ```
 
-                  Estimate  Est.Error         Q2.5      Q97.5
-Intercept       -1.4929088 0.18578886 -1.864353000 -1.1280023
-age              0.8041994 0.19514296  0.428887475  1.2097660
-lingMonolingual  0.2862603 0.14310121  0.002662163  0.5656250
-modetelling     -0.6060893 0.07683911 -0.755128450 -0.4558087
+                   Estimate  Est.Error       Q2.5      Q97.5
+Intercept       -1.42736854 0.15386009 -1.7506915 -1.1394465
+age              0.72225965 0.15177434  0.4478233  1.0475090
+lingMonolingual -0.06789734 0.09495004 -0.2536275  0.1184465
+modetelling     -0.80409980 0.05226774 -0.9060773 -0.7017779
+
+# 5. Narrative elemtens depending on story
+```{r}
+storydata <- data%>%
+  filter(!is.na(story))%>%
+  mutate(story = ifelse(
+    story == "cat" | story == "dog", "cat/dog", "baby birds/goats"
+  ))%>%
+  mutate(age = scale(age))%>%
+  group_by(child, testlanguage, age, story, item, mode, ling)%>%
+  summarise(sum = sum(response),
+            n = length(response))
+
+storydata <- data%>%
+  filter(!is.na(story))%>%
+  mutate(story = ifelse(
+    story == "cat" | story == "dog", "cat/dog", "baby birds/goats"
+  ))%>%
+  mutate(age = scale(age))%>%
+  group_by(child, testlanguage, age, story, item, mode, ling)%>%
+  summarise(sum = sum(response),
+            n = length(response))
+```
+run script `run_bm5.R`
+
+```{r}
+bm5 <- readRDS("../saves/bm5.rds")
+bm5_1 <- readRDS("../saves/bm5_1.rds")
+```
+
+```{r}
+print(loo_compare(bm5, bm5_1))
+```
+
+## Fixed effects
+
+```{r}
+round(fixef(bm5),2)
+```
+
+                             Estimate Est.Error  Q2.5 Q97.5
+Intercept                        1.84      0.14  1.57  2.13
+age                              0.70      0.12  0.47  0.95
+lingMonolingual                 -0.13      0.05 -0.23 -0.03
+modetelling                     -0.90      0.03 -0.95 -0.85
+itemgoal                        -1.68      0.15 -1.98 -1.38
+itemist                         -1.73      0.10 -1.93 -1.52
+itemoutcome                     -0.14      0.13 -0.38  0.12
+storycatDdog                    -1.15      0.11 -1.37 -0.93
+age:lingMonolingual             -0.36      0.07 -0.49 -0.23
+age:itemgoal                    -0.25      0.06 -0.37 -0.14
+age:itemist                      0.15      0.05  0.05  0.25
+age:itemoutcome                  0.06      0.06 -0.06  0.17
+itemgoal:storycatDdog            0.82      0.07  0.69  0.95
+itemist:storycatDdog             0.99      0.06  0.88  1.10
+itemoutcome:storycatDdog         1.27      0.07  1.13  1.40
+age:storycatDdog                 0.12      0.06  0.01  0.23
+age:itemgoal:storycatDdog        0.09      0.06 -0.03  0.21
+age:itemist:storycatDdog        -0.13      0.05 -0.23 -0.02
+age:itemoutcome:storycatDdog     0.00      0.06 -0.12  0.12
+
+## Visualization
+
+### Probability of component by item and story
+```{r}
+ndata5 <- storydata%>%
+  select(ling,item, story, testlanguage, age)%>%
+  group_by(ling,item, story, testlanguage)%>%
+  distinct(age, .keep_all = T)%>%
+  mutate(mode = "telling", 
+         n = 1)
+
+post5 <- fitted(bm5, newdata = ndata5, re_formula =~(age + item + story | testlanguage))%>%
+  as_tibble() %>%
+  bind_cols(ndata5)%>%
+  mutate()%>%
+  filter(item != "setting")%>%
+  mutate(item = recode(item,
+                        "ist" = "Internal State", 
+                       "goal" = "Goal",
+                       "attempt" = "Attempt",
+                       "outcome" = "Outcome"))%>%
+  mutate(item = factor(item, levels = c("Internal State", "Goal", "Attempt", "Outcome")))%>%
+  mutate(age = age * sd(data$age) + mean(data$age))%>%
+  mutate(mode = str_to_title(mode))
 
 
+ndata5_1 <- storydata%>%
+  select(ling,item, story, age)%>%
+  group_by(ling,item, story)%>%
+  distinct(age, .keep_all = T)%>%
+  mutate(mode = "telling", 
+         n = 1)
 
+post5_1 <- fitted(bm5, newdata = ndata5_1, re_formula = NA)%>%
+  as_tibble() %>%
+  bind_cols(ndata5_1)%>%
+  mutate()%>%
+  filter(item != "setting")%>%
+  mutate(item = recode(item,
+                        "ist" = "Internal State", 
+                       "goal" = "Goal",
+                       "attempt" = "Attempt",
+                       "outcome" = "Outcome"))%>%
+  mutate(item = factor(item, levels = c("Internal State", "Goal", "Attempt", "Outcome")))%>%
+  mutate(age = age * sd(data$age) + mean(data$age))%>%
+  mutate(mode = str_to_title(mode))
+
+saveRDS(post5, "../saves/post5.rds")
+saveRDS(post5_1, "../saves/post5_1.rds")
+
+post5 <- readRDS("../saves/post5.rds")
+post5_1 <- readRDS("../saves/post5_1.rds")
+
+ggplot()+
+  geom_line(data = post5, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5, col = story, group = interaction(story,testlanguage)), stat = "identity", alpha = .25)+
+  geom_smooth(data = post5_1, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5, fill =story, col = story), stat = "identity", alpha = .25)+
+  theme_bw()+
+  scale_color_colorblind(name = "Story")+
+  scale_fill_colorblind(name = "Story")+
+  ylim(0,1)+
+  facet_grid(ling~item)+
+  labs(x = "Age", y="Probability of producing a narrative component")+
+  theme(legend.position = c(0.1, 0.35), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
+
+```
+
+```{r}
+ggsave("../visuals/fig8.png", height = 8, width = 12, scale = 1)
+```

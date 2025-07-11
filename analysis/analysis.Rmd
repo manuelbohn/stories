@@ -160,7 +160,9 @@ ggplot()+
   labs(x = "Age in years", y="Probability of producing a narrative component")+
   theme(legend.position = c(0.8, 0.15), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
 ```
-
+```{r}
+ggsave("../visuals/fig2.png", width = 6, height = 4, scale = 1)
+```
 
 # 1. What are the differences in children’s overall narrative skills across languages?
 
@@ -405,8 +407,13 @@ ggplot()+
   ylim(0,1)+
   facet_grid(type~mode)+
   labs(x = "Age in years", y="Probability of producing a narrative component")+
-  theme(legend.position = c(0.85, 0.15), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
+  theme(legend.position = c(0.9, 0.1), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
 
+```
+
+
+```{r}
+ggsave("../visuals/fig3.png", width = 10, height = 6, scale = 1)
 ```
 
 # 2. How does the development of bilinguals’ narrative skills in L1 compare to that in L2? 
@@ -474,37 +481,37 @@ modetelling        -0.4113573 0.02331139 -0.455899700 -0.3655539
 ## Visualization
 
 ```{r}
-ndata2 <- mdata2%>%
-  select(testlanguage,test_lang_status, age, mode)%>%
-  group_by(testlanguage,test_lang_status, mode)%>%
-  distinct(age)%>%
-  mutate(n = 1)
-
-
-post2 <- fitted(bm2, newdata = ndata2, re_formula =~(age | testlanguage))%>%
-  as_tibble() %>%
-  bind_cols(ndata2)%>%
-  mutate(age = age * sd(data$age) + mean(data$age))%>%
-  mutate(mode = str_to_title(mode))%>%
-  mutate(mode = factor(mode, levels = c("Telling","Retelling")))
-
-
-ndata2_2 <- mdata2%>%
-  ungroup()%>%
-  distinct(mode, test_lang_status)%>%
-  expand_grid(age = unique(mdata2$age))%>%
-  mutate(n = 1)
-
-post2_2 <- fitted(bm2, newdata = ndata2_2, re_formula = NA)%>%
-  as_tibble() %>%
-  bind_cols(ndata2_2)%>%
-  mutate(age = age * sd(data$age) + mean(data$age))%>%
-  mutate(mode = str_to_title(mode))%>%
-  mutate(mode = factor(mode, levels = c("Telling","Retelling")))
-
-
-saveRDS(post2, "../saves/post2.rds")
-saveRDS(post2_2, "../saves/post2_2.rds")
+# ndata2 <- mdata2%>%
+#   select(testlanguage,test_lang_status, age, mode)%>%
+#   group_by(testlanguage,test_lang_status, mode)%>%
+#   distinct(age)%>%
+#   mutate(n = 1)
+# 
+# 
+# post2 <- fitted(bm2, newdata = ndata2, re_formula =~(age | testlanguage))%>%
+#   as_tibble() %>%
+#   bind_cols(ndata2)%>%
+#   mutate(age = age * sd(data$age) + mean(data$age))%>%
+#   mutate(mode = str_to_title(mode))%>%
+#   mutate(mode = factor(mode, levels = c("Telling","Retelling")))
+# 
+# 
+# ndata2_2 <- mdata2%>%
+#   ungroup()%>%
+#   distinct(mode, test_lang_status)%>%
+#   expand_grid(age = unique(mdata2$age))%>%
+#   mutate(n = 1)
+# 
+# post2_2 <- fitted(bm2, newdata = ndata2_2, re_formula = NA)%>%
+#   as_tibble() %>%
+#   bind_cols(ndata2_2)%>%
+#   mutate(age = age * sd(data$age) + mean(data$age))%>%
+#   mutate(mode = str_to_title(mode))%>%
+#   mutate(mode = factor(mode, levels = c("Telling","Retelling")))
+# 
+# 
+# saveRDS(post2, "../saves/post2.rds")
+# saveRDS(post2_2, "../saves/post2_2.rds")
 
 
 post2 <- readRDS("../saves/post2.rds")
@@ -524,7 +531,7 @@ ggplot()+
 ```
 
 ```{r}
-ggsave("../visuals/fig3.png", width = 10, height = 5, scale = 1)
+ggsave("../visuals/fig4.png", width = 10, height = 4, scale = 1)
 ```
 
 # 3. What is the general pattern in children’s use of factual and inferred components across the investigated languages?
@@ -791,71 +798,71 @@ age:lingMonolingual -0.3171017 0.12125556 -0.5532681 -0.07933007
 ### Visualization
 
 ```{r}
-ndata4 <- mnar_data1%>%
-  ungroup()%>%
-  distinct(testlanguage)%>%
-  expand_grid(ling = unique(mnar_data1$ling))%>%
-  mutate(mode = "telling", 
-         age = 0, 
-         n = 1)
-
-
-post4 <- fitted(bm4_1, newdata = ndata4, re_formula =~(1 | testlanguage))%>%
-  as_tibble() %>%
-  bind_cols(ndata4)%>%
-  mutate(testlanguage = recode(testlanguage,
-                 "per" = "Persian",
-                     "hrv" = "Croatian",
-                     "rus" = "Russian",
-                     "est" = "Estonian",
-                     "fin" = "Finnish",
-                     "swe" = "Swedish",
-                     "geo" = "Georgian",
-                     "tur" = "Turkish",
-                     "aka" = "Akan",
-                     "urd" = "Urdu",
-                     "hin" = "Hindi",
-                     "kan" = "Kannada",
-                     "gon" = "Gondi",
-                     "hlb" = "Halbi",
-                     "gle" = "Irish",
-                     "heb" = "Hebrew",
-                     "ita" = "Italian",
-                     "uzb" = "Uzbek",
-                     "bi" = "Bislama",
-                     "nld" = "Dutch",
-                     "tgl" = "Tagalog",
-                     "pol" = "Polish",
-                     "eng" = "English",
-                     "slk" = "Slovak",
-                     "sgh" = "Shughni",
-                     "lug" = "Luganda",
-                     "sah" = "Sakha", 
-                     "cor" = "Coriglianese",
-                     "dan" = "Danish",
-                     "bis" = "Bislama",
-                     "iii" = "Sichuan Yi",
-                     "cat" = "Catalan", 
-                     "ita" = "Italian",
-                     "ger" = "German",
-                     "kaz" = "Kazakh",
-                     "uig" = "Uighur",
-                     "lt" = "Lithuanian",
-                     "tgk" = "Tajik",
-                     "msa" = "Malay",
-                     "esp" = "Spanish",
-                     "kor" = "Korean",
-                     "cg" = "Cypriot Greek",
-                     "yue" = "Yue Chinese",
-                     "ell" = "Modern Greek",
-                     "ber" = "Berber languages",
-                     "ary" = "Moroccan Arabic",
-                     "xho" = "Xhosa",
-                     "afr" = "Afrikaans",
-                     "cmn" = "Mandarin Chinese",
-                     "ghc" = "Hiberno-Scottish Gaelic",
-                     "ukr"  = "Ukrainian"
-                           ))
+# ndata4 <- mnar_data1%>%
+#   ungroup()%>%
+#   distinct(testlanguage)%>%
+#   expand_grid(ling = unique(mnar_data1$ling))%>%
+#   mutate(mode = "telling", 
+#          age = 0, 
+#          n = 1)
+# 
+# 
+# post4 <- fitted(bm4_1, newdata = ndata4, re_formula =~(1 | testlanguage))%>%
+#   as_tibble() %>%
+#   bind_cols(ndata4)%>%
+#   mutate(testlanguage = recode(testlanguage,
+#                  "per" = "Persian",
+#                      "hrv" = "Croatian",
+#                      "rus" = "Russian",
+#                      "est" = "Estonian",
+#                      "fin" = "Finnish",
+#                      "swe" = "Swedish",
+#                      "geo" = "Georgian",
+#                      "tur" = "Turkish",
+#                      "aka" = "Akan",
+#                      "urd" = "Urdu",
+#                      "hin" = "Hindi",
+#                      "kan" = "Kannada",
+#                      "gon" = "Gondi",
+#                      "hlb" = "Halbi",
+#                      "gle" = "Irish",
+#                      "heb" = "Hebrew",
+#                      "ita" = "Italian",
+#                      "uzb" = "Uzbek",
+#                      "bi" = "Bislama",
+#                      "nld" = "Dutch",
+#                      "tgl" = "Tagalog",
+#                      "pol" = "Polish",
+#                      "eng" = "English",
+#                      "slk" = "Slovak",
+#                      "sgh" = "Shughni",
+#                      "lug" = "Luganda",
+#                      "sah" = "Sakha", 
+#                      "cor" = "Coriglianese",
+#                      "dan" = "Danish",
+#                      "bis" = "Bislama",
+#                      "iii" = "Sichuan Yi",
+#                      "cat" = "Catalan", 
+#                      "ita" = "Italian",
+#                      "ger" = "German",
+#                      "kaz" = "Kazakh",
+#                      "uig" = "Uighur",
+#                      "lt" = "Lithuanian",
+#                      "tgk" = "Tajik",
+#                      "msa" = "Malay",
+#                      "esp" = "Spanish",
+#                      "kor" = "Korean",
+#                      "cg" = "Cypriot Greek",
+#                      "yue" = "Yue Chinese",
+#                      "ell" = "Modern Greek",
+#                      "ber" = "Berber languages",
+#                      "ary" = "Moroccan Arabic",
+#                      "xho" = "Xhosa",
+#                      "afr" = "Afrikaans",
+#                      "cmn" = "Mandarin Chinese",
+#                      "ghc" = "Hiberno-Scottish Gaelic",
+#                      "ukr"  = "Ukrainian"
+#                            ))
 
 
 saveRDS(post4, "../saves/post4.rds")
@@ -872,7 +879,7 @@ ggplot()+
 ```
 
 ```{r}
-ggsave("../visuals/fig6.png", height = 8, width = 12, scale = 1)
+ggsave("../visuals/fig7.png", height = 10, width = 8, scale = 1)
 ```
 
 # 4.1. Complete narratives in bilinguals
@@ -1075,10 +1082,10 @@ ggplot()+
   ylim(0,1)+
   facet_grid(ling~item)+
   labs(x = "Age", y="Probability of producing a narrative component")+
-  theme(legend.position = c(0.1, 0.35), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
+  theme(legend.position = c(0.1, 0.4), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
 
 ```
 
 ```{r}
-ggsave("../visuals/fig8.png", height = 8, width = 12, scale = 1)
+ggsave("../visuals/fig8.png", height = 6, width = 10, scale = 1)
 ```

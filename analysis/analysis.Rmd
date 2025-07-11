@@ -554,29 +554,21 @@ bm3 <- readRDS("../saves/bm3.rds")
 ## Fixed effects
 
 ```{r}
-fixef(bm3)
+round(fixef(bm3),2)
 ```
 
-                      Estimate  Est.Error       Q2.5       Q97.5
-Intercept            0.5736588 0.66094813 -0.8164857  1.87133975
-age                  0.7904910 0.28360935  0.2838487  1.33117925
-lingMonolingual     -0.1295025 0.10735855 -0.3360821  0.08074064
-modetelling         -0.4118338 0.02692149 -0.4640448 -0.35936258
-age:lingMonolingual -0.5162402 0.14297884 -0.7930640 -0.23489268
-
-
-## Item effects
-
-```{r}
-ranef(bm3)$item
-```
-
-
-          Estimate Est.Error       Q2.5     Q97.5
-attempt  0.8244836 0.6541805 -0.4765082 2.2126055
-goal    -0.8948328 0.6547706 -2.1964730 0.4923131
-ist     -0.5591364 0.6529128 -1.8568003 0.8227929
-outcome  0.8138825 0.6530311 -0.4749704 2.2059632
+                    Estimate Est.Error  Q2.5 Q97.5
+Intercept               1.15      0.14  0.88  1.42
+age                     0.65      0.11  0.44  0.87
+lingMonolingual        -0.08      0.05 -0.17  0.02
+modetelling            -0.66      0.02 -0.70 -0.62
+itemgoal               -1.32      0.16 -1.64 -1.01
+itemist                -1.29      0.12 -1.54 -1.05
+itemoutcome             0.44      0.16  0.12  0.75
+age:lingMonolingual    -0.25      0.06 -0.37 -0.12
+age:itemgoal           -0.12      0.04 -0.20 -0.05
+age:itemist             0.14      0.03  0.07  0.20
+age:itemoutcome         0.14      0.04  0.05  0.23
 
 ## Visualization
 

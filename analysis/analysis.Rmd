@@ -798,15 +798,15 @@ modetelling     -0.70627605 0.04329577 -0.7927617 -0.6223730
 ### Interaction model 
 
 ```{r}
-fixef(bm4_1)
+round(fixef(bm4_1),2)
 ```
 
-                      Estimate  Est.Error       Q2.5       Q97.5
-Intercept           -0.3435852 0.13694491 -0.6191936 -0.08773419
-age                  0.9620635 0.15446200  0.6755273  1.28608100
-lingMonolingual     -0.1224120 0.08678811 -0.2979445  0.04560172
-modetelling         -0.7121734 0.04281527 -0.7960030 -0.62755342
-age:lingMonolingual -0.3171017 0.12125556 -0.5532681 -0.07933007
+                    Estimate Est.Error  Q2.5 Q97.5
+Intercept              -0.34      0.14 -0.62 -0.09
+age                     0.96      0.15  0.68  1.29
+lingMonolingual        -0.12      0.09 -0.30  0.05
+modetelling            -0.71      0.04 -0.80 -0.63
+age:lingMonolingual    -0.32      0.12 -0.32 -0.08
 
 ### Visualization
 
@@ -946,32 +946,33 @@ mnar_data2 <- nar_data2%>%
   summarise(sum = sum(complete),
             n = length(complete))
 
-# bm4_2 <- brm(sum|trials(n) ~ age + ling + mode + (1|child) + (age | testlanguage), 
-#     data = mnar_data2,
-#     chains = 4, 
-#     cores = 4,
-#     iter = 4000,
-#     family = binomial(),
-#     threads = threading(8), #to speed things up, comment out if not on a cluster
-#     backend = "cmdstanr",
-#     control = list(adapt_delta = 0.95, max_treedepth = 20)
-#     )%>%add_criterion("loo")  #to speed things up, comment out if not on a cluster)
-# 
-# 
-# saveRDS(bm4_2, "../saves/bm4_2.rds")
+bm4_2 <- brm(sum|trials(n) ~ age * ling + mode + (1|child) + (age | testlanguage),
+    data = mnar_data2,
+    chains = 4,
+    cores = 4,
+    iter = 4000,
+    family = binomial(),
+    threads = threading(8), #to speed things up, comment out if not on a cluster
+    backend = "cmdstanr",
+    control = list(adapt_delta = 0.95, max_treedepth = 20)
+    )%>%add_criterion("loo")  #to speed things up, comment out if not on a cluster)
+
+
+saveRDS(bm4_2, "../saves/bm4_2.rds")
 ```
 
 ## Fixed effects
 
 ```{r}
-fixef(bm4_2)
+round(fixef(bm4_2),2)
 ```
 
-                   Estimate  Est.Error       Q2.5      Q97.5
-Intercept       -1.42736854 0.15386009 -1.7506915 -1.1394465
-age              0.72225965 0.15177434  0.4478233  1.0475090
-lingMonolingual -0.06789734 0.09495004 -0.2536275  0.1184465
-modetelling     -0.80409980 0.05226774 -0.9060773 -0.7017779
+                    Estimate Est.Error  Q2.5 Q97.5
+Intercept              -1.50      0.15 -1.81 -1.21
+age                     0.74      0.14  0.48  1.04
+lingMonolingual        -0.13      0.10 -0.33  0.07
+modetelling            -0.80      0.05 -0.91 -0.69
+age:lingMonolingual    -0.19      0.13 -0.45  0.06
 
 # 5. Narrative elemtens depending on story
 ```{r}

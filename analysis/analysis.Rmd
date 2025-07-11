@@ -532,17 +532,12 @@ ggsave("../visuals/fig3.png", width = 10, height = 5, scale = 1)
 run script "run_bm3.R"
 
 ```{r}
-age * ling + mode + age*item 
-```
-
-```{r}
 mdata_item <- data%>%
   mutate(age = scale(age))%>%
   group_by(child, age, ling, mode,testlanguage, item)%>%
   summarise(sum = sum(response),
             n = length(response))
 ```
-
 
 
 ```{r}
@@ -585,10 +580,11 @@ ndata3 <- mdata%>%
   expand_grid(testlanguage = unique(mdata$testlanguage))%>%
   mutate(mode = "telling", 
          age = 0, 
-         ling = "Bilingual")
+         ling = "Bilingual", 
+         n = 1)
 
 
-post3 <- fitted(bm3, newdata = ndata3, re_formula =~(testlanguage | item))%>%
+post3 <- fitted(bm3, newdata = ndata3, re_formula =~(age + item | testlanguage))%>%
   as_tibble() %>%
   bind_cols(ndata3)%>%
   mutate(testlanguage = recode(testlanguage,
@@ -642,7 +638,8 @@ post3 <- fitted(bm3, newdata = ndata3, re_formula =~(testlanguage | item))%>%
                      "afr" = "Afrikaans",
                      "cmn" = "Mandarin Chinese",
                      "ghc" = "Hiberno-Scottish Gaelic",
-                     "ukr"  = "Ukrainian"
+                     "ukr"  = "Ukrainian",
+                      "lit" = "Lithuanian"
                            ))%>%
   filter(item != "setting")%>%
   mutate(item = recode(item,
@@ -673,10 +670,11 @@ ggsave("../visuals/fig4.png", height = 8, width = 12, scale = 1)
 
 ```{r}
 ndata3_1 <- mdata%>%
-  distinct(item, age, ling)%>%
-  mutate(mode = "telling")
+  distinct(item, age, ling, testlanguage)%>%
+  mutate(mode = "telling", 
+         n = 1)
 
-post3_1 <- fitted(bm3, newdata = ndata3_1, re_formula =~(age | item), )%>%
+post3_1 <- fitted(bm3, newdata = ndata3_1, re_formula =~(age + item | testlanguage), )%>%
   as_tibble() %>%
   bind_cols(ndata3_1)%>%
   mutate()%>%
@@ -690,12 +688,35 @@ post3_1 <- fitted(bm3, newdata = ndata3_1, re_formula =~(age | item), )%>%
   mutate(age = age * sd(data$age) + mean(data$age))%>%
   mutate(mode = str_to_title(mode))
 
+ndata3_2 <- mdata%>%
+  distinct(item, age, ling)%>%
+  mutate(mode = "telling", 
+         n = 1)
+
+post3_2 <- fitted(bm3, newdata = ndata3_2, re_formula = NA )%>%
+  as_tibble() %>%
+  bind_cols(ndata3_2)%>%
+  mutate()%>%
+  filter(item != "setting")%>%
+  mutate(item = recode(item,
+                        "ist" = "Internal State", 
+                       "goal" = "Goal",
+                       "attempt" = "Attempt",
+                       "outcome" = "Outcome"))%>%
+  mutate(item = factor(item, levels = c("Internal State", "Goal", "Attempt", "Outcome")))%>%
+  mutate(age = age * sd(data$age) + mean(data$age))%>%
+  mutate(mode = str_to_title(mode))
+
+
+saveRDS(post3_2, "../saves/post3_2.rds")
 saveRDS(post3_1, "../saves/post3_1.rds")
 
 post3_1 <- readRDS("../saves/post3_1.rds")
+post3_2 <- readRDS("../saves/post3_2.rds")
 
 ggplot()+
-  geom_smooth(data = post3_1, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5, fill =item, col = item), stat = "identity", alpha = .25)+
+   geom_line(data = post3_1, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5, col = item, group = interaction(item,testlanguage)), stat = "identity", alpha = .15)+
+  geom_smooth(data = post3_2, aes(x = age/12, y = Estimate, ymin = Q2.5, ymax = Q97.5, fill =item, col = item), stat = "identity", alpha = .25)+
   theme_bw()+
   scale_color_viridis_d(name = "Component")+
   scale_fill_viridis_d(name = "Component")+

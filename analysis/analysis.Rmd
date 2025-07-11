@@ -413,7 +413,7 @@ ggplot()+
 
 
 ```{r}
-ggsave("../visuals/fig3.png", width = 10, height = 6, scale = 1)
+ggsave("../visuals/fig3.png", width = 12, height = 8, scale = 1)
 ```
 
 # 2. How does the development of bilinguals’ narrative skills in L1 compare to that in L2? 
@@ -527,11 +527,11 @@ ggplot()+
   ylim(0,1)+
   facet_grid(~mode)+
   labs(x = "Age", y="Probability of producing a narrative component")+
-  theme(legend.position = c(0.85, 0.15), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
+  theme(legend.position = c(0.9, 0.15), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
 ```
 
 ```{r}
-ggsave("../visuals/fig4.png", width = 10, height = 4, scale = 1)
+ggsave("../visuals/fig4.png", width = 12, height = 6, scale = 1)
 ```
 
 # 3. What is the general pattern in children’s use of factual and inferred components across the investigated languages?
@@ -582,82 +582,82 @@ outcome  0.8138825 0.6530311 -0.4749704 2.2059632
 
 ### Probability of component by language for avergae age
 ```{r}
-ndata3 <- mdata%>%
-  distinct(item)%>%
-  expand_grid(testlanguage = unique(mdata$testlanguage))%>%
-  mutate(mode = "telling", 
-         age = 0, 
-         ling = "Bilingual", 
-         n = 1)
-
-
-post3 <- fitted(bm3, newdata = ndata3, re_formula =~(age + item | testlanguage))%>%
-  as_tibble() %>%
-  bind_cols(ndata3)%>%
-  mutate(testlanguage = recode(testlanguage,
-                 "per" = "Persian",
-                     "hrv" = "Croatian",
-                     "rus" = "Russian",
-                     "est" = "Estonian",
-                     "fin" = "Finnish",
-                     "swe" = "Swedish",
-                     "geo" = "Georgian",
-                     "tur" = "Turkish",
-                     "aka" = "Akan",
-                     "urd" = "Urdu",
-                     "hin" = "Hindi",
-                     "kan" = "Kannada",
-                     "gon" = "Gondi",
-                     "hlb" = "Halbi",
-                     "gle" = "Irish",
-                     "heb" = "Hebrew",
-                     "ita" = "Italian",
-                     "uzb" = "Uzbek",
-                     "bi" = "Bislama",
-                     "nld" = "Dutch",
-                     "tgl" = "Tagalog",
-                     "pol" = "Polish",
-                     "eng" = "English",
-                     "slk" = "Slovak",
-                     "sgh" = "Shughni",
-                     "lug" = "Luganda",
-                     "sah" = "Sakha", 
-                     "cor" = "Coriglianese",
-                     "dan" = "Danish",
-                     "bis" = "Bislama",
-                     "iii" = "Sichuan Yi",
-                     "cat" = "Catalan", 
-                     "ita" = "Italian",
-                     "ger" = "German",
-                     "kaz" = "Kazakh",
-                     "uig" = "Uighur",
-                     "lt" = "Lithuanian",
-                     "tgk" = "Tajik",
-                     "msa" = "Malay",
-                     "esp" = "Spanish",
-                     "kor" = "Korean",
-                     "cg" = "Cypriot Greek",
-                     "yue" = "Yue Chinese",
-                     "ell" = "Modern Greek",
-                     "ber" = "Berber languages",
-                     "ary" = "Moroccan Arabic",
-                     "xho" = "Xhosa",
-                     "afr" = "Afrikaans",
-                     "cmn" = "Mandarin Chinese",
-                     "ghc" = "Hiberno-Scottish Gaelic",
-                     "ukr"  = "Ukrainian",
-                      "lit" = "Lithuanian"
-                           ))%>%
-  filter(item != "setting")%>%
-  mutate(item = recode(item,
-                        "ist" = "Internal State", 
-                       "goal" = "Goal",
-                       "attempt" = "Attempt",
-                       "outcome" = "Outcome"))%>%
-  mutate(item = factor(item, levels = c("Internal State", "Goal", "Attempt", "Outcome")))
-
-
-saveRDS(post3, "../saves/post3.rds")
+# ndata3 <- mdata%>%
+#   distinct(item)%>%
+#   expand_grid(testlanguage = unique(mdata$testlanguage))%>%
+#   mutate(mode = "telling", 
+#          age = 0, 
+#          ling = "Bilingual", 
+#          n = 1)
+# 
+# 
+# post3 <- fitted(bm3, newdata = ndata3, re_formula =~(age + item | testlanguage))%>%
+#   as_tibble() %>%
+#   bind_cols(ndata3)%>%
+#   mutate(testlanguage = recode(testlanguage,
+#                  "per" = "Persian",
+#                      "hrv" = "Croatian",
+#                      "rus" = "Russian",
+#                      "est" = "Estonian",
+#                      "fin" = "Finnish",
+#                      "swe" = "Swedish",
+#                      "geo" = "Georgian",
+#                      "tur" = "Turkish",
+#                      "aka" = "Akan",
+#                      "urd" = "Urdu",
+#                      "hin" = "Hindi",
+#                      "kan" = "Kannada",
+#                      "gon" = "Gondi",
+#                      "hlb" = "Halbi",
+#                      "gle" = "Irish",
+#                      "heb" = "Hebrew",
+#                      "ita" = "Italian",
+#                      "uzb" = "Uzbek",
+#                      "bi" = "Bislama",
+#                      "nld" = "Dutch",
+#                      "tgl" = "Tagalog",
+#                      "pol" = "Polish",
+#                      "eng" = "English",
+#                      "slk" = "Slovak",
+#                      "sgh" = "Shughni",
+#                      "lug" = "Luganda",
+#                      "sah" = "Sakha", 
+#                      "cor" = "Coriglianese",
+#                      "dan" = "Danish",
+#                      "bis" = "Bislama",
+#                      "iii" = "Sichuan Yi",
+#                      "cat" = "Catalan", 
+#                      "ita" = "Italian",
+#                      "ger" = "German",
+#                      "kaz" = "Kazakh",
+#                      "uig" = "Uighur",
+#                      "lt" = "Lithuanian",
+#                      "tgk" = "Tajik",
+#                      "msa" = "Malay",
+#                      "esp" = "Spanish",
+#                      "kor" = "Korean",
+#                      "cg" = "Cypriot Greek",
+#                      "yue" = "Yue Chinese",
+#                      "ell" = "Modern Greek",
+#                      "ber" = "Berber languages",
+#                      "ary" = "Moroccan Arabic",
+#                      "xho" = "Xhosa",
+#                      "afr" = "Afrikaans",
+#                      "cmn" = "Mandarin Chinese",
+#                      "ghc" = "Hiberno-Scottish Gaelic",
+#                      "ukr"  = "Ukrainian",
+#                       "lit" = "Lithuanian"
+#                            ))%>%
+#   filter(item != "setting")%>%
+#   mutate(item = recode(item,
+#                         "ist" = "Internal State", 
+#                        "goal" = "Goal",
+#                        "attempt" = "Attempt",
+#                        "outcome" = "Outcome"))%>%
+#   mutate(item = factor(item, levels = c("Internal State", "Goal", "Attempt", "Outcome")))
+# 
+# 
+# saveRDS(post3, "../saves/post3.rds")
 
 post3 <- readRDS("../saves/post3.rds")
 
@@ -670,7 +670,7 @@ ggplot()+
 ```
 
 ```{r}
-ggsave("../visuals/fig4.png", height = 8, width = 12, scale = 1)
+ggsave("../visuals/fig5.png", height = 10, width = 8, scale = 1)
 ```
 
 ### Probability of component by age across languages
@@ -729,11 +729,11 @@ ggplot()+
   scale_fill_viridis_d(name = "Component")+
   facet_grid(~ling)+
   labs(y = "Probability to produce the component", x="Age")+
-  theme(legend.position = c(0.9, 0.2))
+  theme(legend.position = c(0.9, 0.15), legend.background = element_rect(colour = "black", size = 0.5, linetype = "solid"))
 ```
 
 ```{r}
-ggsave("../visuals/fig5.png", width = 10, height = 5, scale = 1)
+ggsave("../visuals/fig6.png", width = 12, height = 6, scale = 1)
 ```
 
 # 4. How do complete episodes evolve across languages and in monolingual vs bilingual children?

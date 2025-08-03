@@ -1,4 +1,4 @@
-# A story of stories: a large-scale cross-linguistic study of young children’s narratives
+# Narratives as a window into world understanding: a story of stories across 44 languages
 
 ------------------------------------------------------------------------
 
